@@ -138,7 +138,7 @@ async function main() {
   });
 
   await runStep("Generate Prompt", async () => {
-    // AI regeneration prompts were written to pages/<slug>/sections/*.prompt.txt above.
+    // Written to pages/<slug>/sections/<section-id>/analysis/prompt.json above.
   });
 
   const nextAppDir = join(siteOutDir, "next-app");
