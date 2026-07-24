@@ -28,3 +28,16 @@ export interface GeneratedProject {
   /** Files to write, keyed by path relative to the output root. */
   files: Map<string, Buffer | string>;
 }
+
+export interface CrawlOptions extends CloneOptions {
+  /** Maximum number of pages to visit, including the start URL. Default 20. */
+  maxPages?: number;
+  /** Only follow links on the same origin as the start URL. Default true. */
+  sameOriginOnly?: boolean;
+}
+
+export interface CrawlResult {
+  startUrl: string;
+  /** One ScrapeResult per visited page, in crawl order. */
+  pages: ScrapeResult[];
+}

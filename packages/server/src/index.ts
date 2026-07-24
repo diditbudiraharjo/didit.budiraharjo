@@ -2,8 +2,16 @@ import express from "express";
 import cors from "cors";
 import archiver from "archiver";
 import { join } from "node:path";
-import { scrapeSite, generateProject, writeFilesToDisk } from "@website-cloner/core";
+import {
+  scrapeSite,
+  crawlSite,
+  generateProject,
+  generateMultiPageProject,
+  writeFilesToDisk,
+} from "@website-cloner/core";
 import { createJob, getJob, jobsRoot, startJobReaper } from "./jobs.js";
+
+const MAX_CRAWL_PAGES = 50;
 
 const PORT = Number(process.env.PORT ?? 8787);
 
@@ -46,6 +54,44 @@ app.post("/api/clone", async (req, res) => {
     console.error("Clone failed:", err);
     res.status(502).json({
       error: `Failed to clone ${url}: ${err instanceof Error ? err.message : String(err)}`,
+    });
+  }
+});
+
+app.post("/api/crawl", async (req, res) => {
+  const { url, maxPages } = req.body ?? {};
+  if (!isValidHttpUrl(url)) {
+    res.status(400).json({ error: "Provide a valid http(s) url in the request body." });
+    return;
+  }
+  const pageLimit = Math.min(Math.max(1, Number(maxPages) || 20), MAX_CRAWL_PAGES);
+
+  try {
+    const crawl = await crawlSite(url, { timeoutMs: 45_000, maxPages: pageLimit });
+    if (crawl.pages.length === 0) {
+      res.status(502).json({ error: `Failed to crawl ${url}: no pages could be loaded.` });
+      return;
+    }
+
+    const job = createJob(crawl.pages[0]!.pageTitle || url, crawl.startUrl);
+    const files = generateMultiPageProject(crawl);
+    await writeFilesToDisk(files, job.outDir);
+
+    const assetCount = new Set(crawl.pages.flatMap((p) => p.assets.map((a) => a.localPath))).size;
+    res.json({
+      jobId: job.id,
+      title: job.title,
+      sourceUrl: job.sourceUrl,
+      pageCount: crawl.pages.length,
+      pages: crawl.pages.map((p) => ({ url: p.sourceUrl, title: p.pageTitle })),
+      assetCount,
+      previewUrl: `/preview/${job.id}/index.html`,
+      downloadUrl: `/api/clone/${job.id}/download`,
+    });
+  } catch (err) {
+    console.error("Crawl failed:", err);
+    res.status(502).json({
+      error: `Failed to crawl ${url}: ${err instanceof Error ? err.message : String(err)}`,
     });
   }
 });

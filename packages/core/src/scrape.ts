@@ -1,4 +1,4 @@
-import { chromium, type Response as PWResponse } from "playwright-core";
+import { chromium, type Page, type Response as PWResponse } from "playwright-core";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import type { ClonedAsset, CloneOptions, ScrapeResult } from "./types.js";
@@ -8,14 +8,24 @@ const CHROMIUM_CANDIDATES = [
   "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
 ];
 
-function resolveChromiumPath(): string | undefined {
+export const CLONER_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+  "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 WebsiteCloner/0.1";
+
+/** Resolves the local Chromium executable Playwright should drive (see packages/core/README notes on the pre-installed browser). */
+export function resolveChromiumPath(): string | undefined {
   for (const candidate of CHROMIUM_CANDIDATES) {
     if (candidate && existsSync(candidate)) return candidate;
   }
   return undefined;
 }
 
-interface CapturedResponse {
+/** Resolves the proxy Chromium should use, mirroring the HTTPS_PROXY the rest of this process honors. */
+export function resolveProxyServer(): string | undefined {
+  return process.env.HTTPS_PROXY || process.env.https_proxy || undefined;
+}
+
+export interface CapturedResponse {
   buffer: Buffer;
   contentType: string;
 }
@@ -75,86 +85,95 @@ export async function scrapeSite(
 ): Promise<ScrapeResult> {
   const timeoutMs = options.timeoutMs ?? 30_000;
   const viewport = options.viewport ?? { width: 1440, height: 900 };
-  const executablePath = resolveChromiumPath();
-  const proxyServer = process.env.HTTPS_PROXY || process.env.https_proxy;
 
+  const proxyServer = resolveProxyServer();
   const browser = await chromium.launch({
-    executablePath,
+    executablePath: resolveChromiumPath(),
     args: ["--no-sandbox", "--disable-dev-shm-usage"],
     proxy: proxyServer ? { server: proxyServer } : undefined,
   });
 
-  const captured = new Map<string, CapturedResponse>();
-
   try {
-    const context = await browser.newContext({
-      viewport,
-      userAgent:
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-        "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 WebsiteCloner/0.1",
-    });
+    const context = await browser.newContext({ viewport, userAgent: CLONER_USER_AGENT });
     const page = await context.newPage();
-
-    page.on("response", (response: PWResponse) => {
-      void captureResponse(response, captured);
-    });
+    const captured = attachResponseCapture(page);
 
     await page.goto(url, { waitUntil: "networkidle", timeout: timeoutMs }).catch(async () => {
       // Some sites never go fully idle (polling, websockets). Fall back to "load".
       await page.goto(url, { waitUntil: "load", timeout: timeoutMs });
     });
 
-    // Nudge lazy-loaded content (images with loading="lazy", infinite scroll blocks) into view.
-    await autoScroll(page);
-    await page.waitForTimeout(500);
-
-    const snapshot: BrowserSnapshot = await page.evaluate(() => {
-      document.querySelectorAll("script, noscript").forEach((el) => el.remove());
-      document.querySelectorAll("*").forEach((el) => {
-        [...el.attributes].forEach((attr) => {
-          if (/^on/i.test(attr.name)) el.removeAttribute(attr.name);
-        });
-      });
-      return {
-        title: document.title,
-        baseUri: document.baseURI,
-        html: document.documentElement.outerHTML,
-        styleTexts: [...document.querySelectorAll("style")].map((s) => s.textContent ?? ""),
-        stylesheetHrefs: [...document.querySelectorAll('link[rel~="stylesheet"]')].map(
-          (l) => (l as HTMLLinkElement).href,
-        ),
-      };
-    });
-
-    const finalUrl = page.url();
-    await context.close();
-
-    const assets = new Map<string, ClonedAsset>();
-    const download = makeDownloader(captured, assets);
-
-    const cssChunks: string[] = [];
-    for (const styleText of snapshot.styleTexts) {
-      cssChunks.push(await inlineCssUrls(styleText, finalUrl, download));
-    }
-    for (const href of snapshot.stylesheetHrefs) {
-      const fetched = await download(href);
-      if (!fetched) continue;
-      const cssText = fetched.data.toString("utf8");
-      cssChunks.push(await inlineCssUrls(cssText, href, download));
-    }
-
-    const html = await rewriteHtmlAssetUrls(snapshot.html, snapshot.baseUri, download);
-
-    return {
-      sourceUrl: finalUrl,
-      pageTitle: snapshot.title,
-      html,
-      css: cssChunks.filter((c) => c.trim().length > 0).join("\n\n"),
-      assets: [...assets.values()],
-    };
+    return await extractPageResult(page, captured);
   } finally {
     await browser.close();
   }
+}
+
+/** Registers a response listener that captures stylesheet/image/font/media bytes as the page loads. */
+export function attachResponseCapture(page: Page): Map<string, CapturedResponse> {
+  const captured = new Map<string, CapturedResponse>();
+  page.on("response", (response: PWResponse) => {
+    void captureResponse(response, captured);
+  });
+  return captured;
+}
+
+/**
+ * Extracts a ScrapeResult from a Playwright page that has already navigated to its target
+ * URL. Shared by scrapeSite() (which owns its own browser) and the multi-page crawler (which
+ * receives pages from Crawlee's browser pool instead).
+ */
+export async function extractPageResult(
+  page: Page,
+  captured: Map<string, CapturedResponse>,
+): Promise<ScrapeResult> {
+  // Nudge lazy-loaded content (images with loading="lazy", infinite scroll blocks) into view.
+  await autoScroll(page);
+  await page.waitForTimeout(500);
+
+  const snapshot: BrowserSnapshot = await page.evaluate(() => {
+    document.querySelectorAll("script, noscript").forEach((el) => el.remove());
+    document.querySelectorAll("*").forEach((el) => {
+      [...el.attributes].forEach((attr) => {
+        if (/^on/i.test(attr.name)) el.removeAttribute(attr.name);
+      });
+    });
+    return {
+      title: document.title,
+      baseUri: document.baseURI,
+      html: document.documentElement.outerHTML,
+      styleTexts: [...document.querySelectorAll("style")].map((s) => s.textContent ?? ""),
+      stylesheetHrefs: [...document.querySelectorAll('link[rel~="stylesheet"]')].map(
+        (l) => (l as HTMLLinkElement).href,
+      ),
+    };
+  });
+
+  const finalUrl = page.url();
+
+  const assets = new Map<string, ClonedAsset>();
+  const download = makeDownloader(captured, assets);
+
+  const cssChunks: string[] = [];
+  for (const styleText of snapshot.styleTexts) {
+    cssChunks.push(await inlineCssUrls(styleText, finalUrl, download));
+  }
+  for (const href of snapshot.stylesheetHrefs) {
+    const fetched = await download(href);
+    if (!fetched) continue;
+    const cssText = fetched.data.toString("utf8");
+    cssChunks.push(await inlineCssUrls(cssText, href, download));
+  }
+
+  const html = await rewriteHtmlAssetUrls(snapshot.html, snapshot.baseUri, download);
+
+  return {
+    sourceUrl: finalUrl,
+    pageTitle: snapshot.title,
+    html,
+    css: cssChunks.filter((c) => c.trim().length > 0).join("\n\n"),
+    assets: [...assets.values()],
+  };
 }
 
 async function captureResponse(response: PWResponse, captured: Map<string, CapturedResponse>) {
