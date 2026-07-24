@@ -5,7 +5,8 @@
   "type": "module",
   "bin": {
     "ai-cloner": "./dist/cli.js",
-    "clone-site": "./dist/cloneSite.js"
+    "clone-site": "./dist/cloneSite.js",
+    "ai-generate": "./dist/generator/cli.js"
   },
   "scripts": {
     "build": "tsc -b",

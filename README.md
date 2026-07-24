@@ -40,6 +40,21 @@ Two modes:
   `npm run build` on the generated project. Install globally with `npm
   install -g ./packages/ai-cloner` (after `npm run build`), or run directly:
   `node packages/ai-cloner/dist/cloneSite.js <url>`.
+
+  A third bin entry, `ai-generate [analysisDir] [outputDir]` (defaults
+  `./analysis` → `./output`), is the AI Generator: it reads *only* the
+  `analysis/` folders produced above (layout/colors/typography/animation/
+  spacing/component/prompt.json — never `page.html`, never the site's text)
+  and synthesizes a brand-new Next.js + Tailwind v4 + Framer Motion site from
+  those design specs alone — reusable `components/ui/` primitives, section
+  archetypes picked from the detected component patterns (navbar/hero/card
+  grid/footer/form/generic), responsive breakpoints derived from the layout
+  analysis, a working dark-mode toggle (CSS-variable theme tokens with a
+  role-aware light→dark derivation, not a lookup), and real `app/robots.ts`
+  + `app/sitemap.ts`. Since the input never includes the original markup or
+  copy, none of it can leak into the output — placeholder copy is
+  synthesized deterministically instead. Run: `node
+  packages/ai-cloner/dist/generator/cli.js <analysisDir> <outputDir>`.
 - `packages/next-app` — a plain Next.js + Tailwind + Framer Motion scaffold
   (no cloning logic; a starting point for hand-built pages).
 
