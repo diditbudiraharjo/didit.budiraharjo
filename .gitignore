@@ -5,3 +5,5 @@ dist/
 npm-debug.log*
 .next/
 next-env.d.ts
+test-output/
+.env

@@ -27,6 +27,16 @@ Two modes:
   download.
 - `packages/web` — Vite + React front end: paste a URL, pick single-page or
   crawl, see a live preview, download the project.
+- `packages/ai-cloner` — a separate, deeper AI-driven pipeline: Firecrawl page
+  discovery → Playwright render → categorized asset download (images/css/
+  fonts/svg/icons) → HTML/DOM/Markdown save → per-section screenshots →
+  layout/typography/color/spacing/animation/component analysis → per-section
+  JSON + AI prompt → a generated Next.js + Tailwind + Framer Motion project.
+  See `packages/ai-cloner/.env.example` (requires `FIRECRAWL_API_KEY`).
+  Run with `npm run build --workspace=packages/ai-cloner && node
+  packages/ai-cloner/dist/cli.js <url> -o ./output`.
+- `packages/next-app` — a plain Next.js + Tailwind + Framer Motion scaffold
+  (no cloning logic; a starting point for hand-built pages).
 
 ## Usage
 
