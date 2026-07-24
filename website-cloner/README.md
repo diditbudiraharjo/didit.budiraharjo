@@ -22,7 +22,7 @@ website-cloner/
 │   └── css/           extracted stylesheets
 │
 ├── analysis/          derived analysis of the crawled site
-│   ├── ui/             component and pattern inventory
+│   ├── ui/             component and pattern inventory (see `SectionAnalysis` in config/schema.ts)
 │   ├── prompts/         generated prompts for rebuilding sections
 │   ├── animation/       motion and transition notes
 │   ├── typography/      font stacks and type scale
@@ -44,10 +44,10 @@ website-cloner/
    analysis.
 
 `config/` holds settings shared across stages (e.g. crawl targets, output
-options) and `schema.ts`, which defines `PageRecord` — the shape of each
-JSON file written to `crawl/json/`:
+options) and `schema.ts`, which defines the pipeline's JSON record types:
 
 ```ts
+// crawl/json/<page>.json
 interface PageRecord {
   url: string;
   title: string;
@@ -55,5 +55,19 @@ interface PageRecord {
   html: string;
   metadata: Record<string, unknown>;
   links: string[];
+}
+
+// analysis/ui/<section>.json
+interface SectionAnalysis {
+  section: string;
+  layout: string;
+  background: string;
+  buttons: string[];
+  cards: number;
+  animation: string;
+  typography: {
+    heading: string;
+    body: string;
+  };
 }
 ```

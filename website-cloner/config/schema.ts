@@ -7,3 +7,18 @@ export interface PageRecord {
   metadata: Record<string, unknown>;
   links: string[];
 }
+
+// Shape of a single UI section's analysis, as written to
+// analysis/ui/<section>.json.
+export interface SectionAnalysis {
+  section: string;
+  layout: string;
+  background: string;
+  buttons: string[];
+  cards: number;
+  animation: string;
+  typography: {
+    heading: string;
+    body: string;
+  };
+}
