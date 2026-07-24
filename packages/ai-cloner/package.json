@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "bin": {
-    "ai-cloner": "./dist/cli.js"
+    "ai-cloner": "./dist/cli.js",
+    "clone-site": "./dist/cloneSite.js"
   },
   "scripts": {
     "build": "tsc -b",
@@ -15,6 +16,7 @@
     "@website-cloner/core": "*",
     "commander": "^12.1.0",
     "firecrawl": "^4.30.1",
+    "ora": "^9.4.1",
     "parse5": "^7.2.1",
     "playwright-core": "^1.48.2",
     "turndown": "^7.2.0"

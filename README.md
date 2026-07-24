@@ -33,8 +33,13 @@ Two modes:
   layout/typography/color/spacing/animation/component analysis → per-section
   JSON + AI prompt → a generated Next.js + Tailwind + Framer Motion project.
   See `packages/ai-cloner/.env.example` (requires `FIRECRAWL_API_KEY`).
-  Run with `npm run build --workspace=packages/ai-cloner && node
-  packages/ai-cloner/dist/cli.js <url> -o ./output`.
+  Two bin entries: `ai-cloner clone <url> -o <dir>` (configurable), or the
+  zero-config `clone-site <url>` — prints a live checklist (crawl, download
+  assets, screenshot, analyze layout/animation, generate prompt, generate
+  Next.js/Tailwind/Framer Motion, build) and actually runs `npm install` +
+  `npm run build` on the generated project. Install globally with `npm
+  install -g ./packages/ai-cloner` (after `npm run build`), or run directly:
+  `node packages/ai-cloner/dist/cloneSite.js <url>`.
 - `packages/next-app` — a plain Next.js + Tailwind + Framer Motion scaffold
   (no cloning logic; a starting point for hand-built pages).
 
