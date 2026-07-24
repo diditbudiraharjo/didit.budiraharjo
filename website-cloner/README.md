@@ -15,7 +15,7 @@ website-cloner/
 ├── crawl/             raw output captured from the source site
 │   ├── html/          raw page HTML
 │   ├── markdown/      HTML converted to markdown
-│   ├── json/          structured page/metadata dumps
+│   ├── json/          structured page/metadata dumps (see `PageRecord` in config/schema.ts)
 │   ├── dom/           serialized DOM trees
 │   ├── screenshots/   full-page and viewport captures
 │   ├── requests/      captured network requests
@@ -44,4 +44,16 @@ website-cloner/
    analysis.
 
 `config/` holds settings shared across stages (e.g. crawl targets, output
-options).
+options) and `schema.ts`, which defines `PageRecord` — the shape of each
+JSON file written to `crawl/json/`:
+
+```ts
+interface PageRecord {
+  url: string;
+  title: string;
+  markdown: string;
+  html: string;
+  metadata: Record<string, unknown>;
+  links: string[];
+}
+```
