@@ -8,10 +8,23 @@ export interface PageRecord {
   links: string[];
 }
 
+// Recognized section/component categories a page can be broken into.
+export type SectionType =
+  | "Navbar"
+  | "Hero"
+  | "Feature Card"
+  | "Pricing Card"
+  | "FAQ"
+  | "Timeline"
+  | "Footer"
+  | "CTA"
+  | "Gallery"
+  | "Animated Background";
+
 // Shape of a single UI section's analysis, as written to
 // analysis/ui/<section>.json.
 export interface SectionAnalysis {
-  section: string;
+  section: SectionType;
   layout: string;
   background: string;
   buttons: string[];

@@ -57,9 +57,14 @@ interface PageRecord {
   links: string[];
 }
 
+// Recognized section/component categories
+type SectionType =
+  | "Navbar" | "Hero" | "Feature Card" | "Pricing Card" | "FAQ"
+  | "Timeline" | "Footer" | "CTA" | "Gallery" | "Animated Background";
+
 // analysis/ui/<section>.json
 interface SectionAnalysis {
-  section: string;
+  section: SectionType;
   layout: string;
   background: string;
   buttons: string[];
