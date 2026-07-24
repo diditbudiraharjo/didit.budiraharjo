@@ -1,0 +1,20 @@
+{
+  "name": "website-cloner",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Scrapes a live website and rebuilds it as an editable React project.",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/cli && npm run build --workspace=packages/server",
+    "clone": "npm run start --workspace=packages/cli --",
+    "server": "npm run dev --workspace=packages/server",
+    "web": "npm run dev --workspace=packages/web",
+    "dev": "concurrently -n server,web -c blue,green \"npm run server\" \"npm run web\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "typescript": "^5.6.3"
+  }
+}
