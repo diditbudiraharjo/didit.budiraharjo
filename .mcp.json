@@ -3,6 +3,10 @@
     "comfy-cloud": {
       "type": "http",
       "url": "https://cloud.comfy.org/mcp"
+    },
+    "n8n-mcp": {
+      "command": "npx",
+      "args": ["n8n-mcp"]
     }
   }
 }
