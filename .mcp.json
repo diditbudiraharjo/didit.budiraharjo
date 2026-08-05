@@ -3,6 +3,10 @@
     "comfy-cloud": {
       "type": "http",
       "url": "https://cloud.comfy.org/mcp"
+    },
+    "entergram": {
+      "type": "http",
+      "url": "https://mcp.entergram.com/mcp"
     }
   }
 }
