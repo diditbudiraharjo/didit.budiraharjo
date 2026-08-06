@@ -16,5 +16,16 @@
   "bugs": {
     "url": "https://github.com/diditbudiraharjo/didit.budiraharjo/issues"
   },
-  "homepage": "https://github.com/diditbudiraharjo/didit.budiraharjo#readme"
+  "homepage": "https://github.com/diditbudiraharjo/didit.budiraharjo#readme",
+  "dependencies": {
+    "axios": "^1.19.0",
+    "cheerio": "^1.2.0",
+    "crawlee": "^3.18.0",
+    "firecrawl": "^4.32.0",
+    "fs-extra": "^11.4.0",
+    "glob": "^13.0.6",
+    "jsdom": "^30.0.1",
+    "playwright": "^1.62.1",
+    "prettier": "^3.9.6"
+  }
 }
