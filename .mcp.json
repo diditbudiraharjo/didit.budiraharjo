@@ -3,6 +3,13 @@
     "comfy-cloud": {
       "type": "http",
       "url": "https://cloud.comfy.org/mcp"
+    },
+    "scrapegraph-ai": {
+      "type": "http",
+      "url": "https://sgai-mcp-main.onrender.com",
+      "headers": {
+        "X-API-Key": "${SGAI_API_KEY}"
+      }
     }
   }
 }
