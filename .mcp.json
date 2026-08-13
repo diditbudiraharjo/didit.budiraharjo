@@ -3,6 +3,10 @@
     "comfy-cloud": {
       "type": "http",
       "url": "https://cloud.comfy.org/mcp"
+    },
+    "viewmax-studio": {
+      "type": "http",
+      "url": "https://viewmax.studio/api/mcp"
     }
   }
 }
