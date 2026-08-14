@@ -3,6 +3,14 @@
     "comfy-cloud": {
       "type": "http",
       "url": "https://cloud.comfy.org/mcp"
+    },
+    "freebeat": {
+      "command": "npx",
+      "args": ["-y", "freebeat-mcp"],
+      "env": {
+        "FREEBEAT_API_KEY": "",
+        "FREEBEAT_API_HOST": "https://api.freebeat.ai"
+      }
     }
   }
 }
