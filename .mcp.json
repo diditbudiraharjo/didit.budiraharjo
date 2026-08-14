@@ -3,6 +3,14 @@
     "comfy-cloud": {
       "type": "http",
       "url": "https://cloud.comfy.org/mcp"
+    },
+    "Vidu": {
+      "command": "uvx",
+      "args": ["vidu-mcp"],
+      "env": {
+        "VIDU_API_KEY": "your-vidu-api-key",
+        "VIDU_API_HOST": "https://api.vidu.com"
+      }
     }
   }
 }
