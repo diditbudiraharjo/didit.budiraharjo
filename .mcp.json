@@ -6,7 +6,10 @@
     },
     "viewmax-studio": {
       "type": "http",
-      "url": "https://viewmax.studio/api/mcp"
+      "url": "https://viewmax.studio/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${VIEWMAX_API_KEY}"
+      }
     }
   }
 }
