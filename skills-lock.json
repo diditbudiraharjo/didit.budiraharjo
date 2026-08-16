@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "free-llm-apis": {
+      "source": "mnfst/awesome-free-llm-apis",
+      "sourceType": "github",
+      "skillPath": "free-llm-apis/SKILL.md",
+      "computedHash": "6e30f7243e74a05fd846f562507fd1f820b732fc42f1a430e7be05f81334aa2d"
+    }
+  }
+}
