@@ -3,6 +3,10 @@
     "comfy-cloud": {
       "type": "http",
       "url": "https://cloud.comfy.org/mcp"
+    },
+    "glif": {
+      "type": "http",
+      "url": "https://glif.app/api/mcp"
     }
   }
 }
